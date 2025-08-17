@@ -16,5 +16,9 @@
 	<string>$(PRODUCT_NAME)</string>
 	<key>CFBundleIdentifier</key>
 	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Camera access is required for AR treasure discovery</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Location access is needed to find nearby treasures</string>
 </dict>
 </plist>
