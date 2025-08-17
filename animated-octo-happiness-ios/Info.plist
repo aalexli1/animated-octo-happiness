@@ -26,5 +26,13 @@
 	<string>AR Treasure Hunt needs continuous location access to track treasures and provide location-based gameplay features even when the app is in the background.</string>
 	<key>NSLocationDefaultAccuracyReduced</key>
 	<false/>
+	<key>NSUserNotificationsUsageDescription</key>
+	<string>AR Treasure Hunt sends notifications about achievements, discovered treasures, and nearby treasure reminders to enhance your gaming experience.</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>location</string>
+		<string>fetch</string>
+		<string>remote-notification</string>
+	</array>
 </dict>
 </plist>

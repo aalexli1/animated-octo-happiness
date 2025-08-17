@@ -11,6 +11,7 @@ import SwiftData
 @main
 struct animated_octo_happiness_iosApp: App {
     @StateObject private var locationManager = LocationManager()
+    @StateObject private var notificationManager = NotificationManager.shared
     let modelContainer: ModelContainer
     
     init() {
@@ -18,7 +19,8 @@ struct animated_octo_happiness_iosApp: App {
             let schema = Schema([
                 Treasure.self,
                 User.self,
-                UserPreferences.self
+                UserPreferences.self,
+                NotificationPreferences.self
             ])
             let modelConfiguration = ModelConfiguration(
                 schema: schema,
@@ -37,10 +39,17 @@ struct animated_octo_happiness_iosApp: App {
         WindowGroup {
             ContentView()
                 .environmentObject(locationManager)
+                .environmentObject(notificationManager)
                 .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
                     Task { @MainActor in
-                        locationManager.checkLocationServicesStatus()
+                        notificationManager.checkAuthorizationStatus()
                     }
+                }
+                .onReceive(NotificationCenter.default.publisher(for: Notification.Name("ShowTreasureDetail"))) { _ in
+                }
+                .onReceive(NotificationCenter.default.publisher(for: Notification.Name("ShowAchievements"))) { _ in
+                }
+                .onReceive(NotificationCenter.default.publisher(for: Notification.Name("StartTreasureHunt"))) { _ in
                 }
         }
         .modelContainer(modelContainer)
