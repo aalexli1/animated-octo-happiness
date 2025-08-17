@@ -56,6 +56,13 @@ class GameStateManager: ObservableObject {
             playerStats.artifactTreasuresFound += 1
         }
         
+        Task { @MainActor in
+            NotificationManager.shared.scheduleTreasureFoundNotification(
+                treasureName: treasure.name,
+                emoji: treasure.emoji
+            )
+        }
+        
         checkAchievements()
         saveState()
     }
@@ -80,37 +87,36 @@ class GameStateManager: ObservableObject {
     private func checkAchievements() {
         for index in achievements.indices {
             if !achievements[index].isUnlocked {
+                var shouldUnlock = false
+                
                 switch achievements[index].id {
                 case "first_treasure":
-                    if playerStats.totalTreasuresFound >= 1 {
-                        achievements[index].unlock()
-                    }
+                    shouldUnlock = playerStats.totalTreasuresFound >= 1
                 case "treasure_hunter":
-                    if playerStats.totalTreasuresFound >= 10 {
-                        achievements[index].unlock()
-                    }
+                    shouldUnlock = playerStats.totalTreasuresFound >= 10
                 case "master_hunter":
-                    if playerStats.totalTreasuresFound >= 50 {
-                        achievements[index].unlock()
-                    }
+                    shouldUnlock = playerStats.totalTreasuresFound >= 50
                 case "gold_rush":
-                    if playerStats.goldTreasuresFound >= 5 {
-                        achievements[index].unlock()
-                    }
+                    shouldUnlock = playerStats.goldTreasuresFound >= 5
                 case "high_scorer":
-                    if playerStats.totalScore >= 1000 {
-                        achievements[index].unlock()
-                    }
+                    shouldUnlock = playerStats.totalScore >= 1000
                 case "explorer":
-                    if playerStats.totalPlayTimeMinutes >= 30 {
-                        achievements[index].unlock()
-                    }
+                    shouldUnlock = playerStats.totalPlayTimeMinutes >= 30
                 case "perfectionist":
-                    if playerStats.perfectSessions >= 1 {
-                        achievements[index].unlock()
-                    }
+                    shouldUnlock = playerStats.perfectSessions >= 1
                 default:
                     break
+                }
+                
+                if shouldUnlock {
+                    achievements[index].unlock()
+                    
+                    Task { @MainActor in
+                        NotificationManager.shared.scheduleAchievementNotification(
+                            achievement: achievements[index].name,
+                            description: achievements[index].description
+                        )
+                    }
                 }
             }
         }

@@ -17,6 +17,8 @@ class LocationManager: NSObject, ObservableObject {
     
     private let locationManager = CLLocationManager()
     private let detectionRadius: CLLocationDistance = 100
+    private var lastNotificationLocation: CLLocation?
+    private let minimumDistanceForNotification: CLLocationDistance = 500
     
     override init() {
         super.init()
@@ -71,6 +73,27 @@ class LocationManager: NSObject, ObservableObject {
         treasures.filter { treasure in
             guard let distance = distanceToTreasure(treasure) else { return false }
             return distance <= radius
+        }
+    }
+    
+    func checkForNearbyTreasuresAndNotify(_ treasures: [Treasure]) {
+        guard let currentLocation = currentLocation else { return }
+        
+        let shouldNotify = lastNotificationLocation == nil || 
+            (lastNotificationLocation?.distance(from: currentLocation) ?? 0) > minimumDistanceForNotification
+        
+        if shouldNotify {
+            let nearbyTreasures = getNearbyTreasures(treasures, radius: 500)
+            
+            if !nearbyTreasures.isEmpty {
+                Task { @MainActor in
+                    NotificationManager.shared.scheduleNearbyTreasureReminder(
+                        treasureCount: nearbyTreasures.count,
+                        location: currentLocation
+                    )
+                }
+                lastNotificationLocation = currentLocation
+            }
         }
     }
 }
