@@ -8,9 +8,29 @@
 import SwiftUI
 
 struct ContentView: View {
+    @State private var selectedTab = 0
+    
     var body: some View {
-        MapView()
-            .ignoresSafeArea()
+        TabView(selection: $selectedTab) {
+            MapView()
+                .ignoresSafeArea()
+                .tabItem {
+                    Label("Map", systemImage: "map.fill")
+                }
+                .tag(0)
+            
+            ARTreasureHuntView()
+                .tabItem {
+                    Label("AR Hunt", systemImage: "camera.viewfinder")
+                }
+                .tag(1)
+            
+            CollectionView()
+                .tabItem {
+                    Label("Collection", systemImage: "star.fill")
+                }
+                .tag(2)
+        }
     }
 }
 
