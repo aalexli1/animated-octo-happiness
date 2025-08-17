@@ -38,6 +38,12 @@ struct ContentView: View {
                     Label("Treasures", systemImage: "list.bullet")
                 }
                 .tag(3)
+            
+            TreasureHuntView()
+                .tabItem {
+                    Label("Hunt", systemImage: "location.viewfinder")
+                }
+                .tag(4)
         }
         .environmentObject(locationManager)
         .onAppear {
