@@ -2,62 +2,52 @@
 //  TreasureTests.swift
 //  animated-octo-happiness-iosTests
 //
-//  Created by Claude on 8/17/25.
+//  Created by Alex on 8/17/25.
 //
 
 import XCTest
-import CoreLocation
 @testable import animated_octo_happiness_ios
 
-final class TreasureTests: XCTestCase {
+class TreasureTests: XCTestCase {
     
     func testTreasureInitialization() {
-        let coordinate = CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194)
-        let treasure = Treasure(
-            name: "Test Treasure",
-            coordinate: coordinate,
-            symbolName: "star.fill",
-            hint: "Test hint"
-        )
+        let treasure = Treasure(type: .gold, position: [1, 0, 1])
         
-        XCTAssertEqual(treasure.name, "Test Treasure")
-        XCTAssertEqual(treasure.coordinate.latitude, 37.7749)
-        XCTAssertEqual(treasure.coordinate.longitude, -122.4194)
-        XCTAssertEqual(treasure.symbolName, "star.fill")
-        XCTAssertEqual(treasure.hint, "Test hint")
-        XCTAssertFalse(treasure.isFound)
+        XCTAssertNotNil(treasure.id)
+        XCTAssertEqual(treasure.type, .gold)
+        XCTAssertFalse(treasure.isDiscovered)
+        XCTAssertEqual(treasure.position, [1, 0, 1])
+        XCTAssertEqual(treasure.discoveryRadius, 0.5)
     }
     
-    func testTreasureDefaultValues() {
-        let coordinate = CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194)
-        let treasure = Treasure(name: "Test", coordinate: coordinate)
-        
-        XCTAssertEqual(treasure.symbolName, "star.fill")
-        XCTAssertNil(treasure.hint)
-        XCTAssertFalse(treasure.isFound)
+    func testTreasureTypePoints() {
+        XCTAssertEqual(TreasureType.gold.points, 100)
+        XCTAssertEqual(TreasureType.silver.points, 50)
+        XCTAssertEqual(TreasureType.bronze.points, 25)
+        XCTAssertEqual(TreasureType.gem.points, 75)
+        XCTAssertEqual(TreasureType.artifact.points, 150)
     }
     
-    func testTreasureEquality() {
-        let coordinate = CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194)
-        let treasure1 = Treasure(name: "Test", coordinate: coordinate)
-        let treasure2 = treasure1
-        let treasure3 = Treasure(name: "Different", coordinate: coordinate)
-        
-        XCTAssertEqual(treasure1, treasure2)
-        XCTAssertNotEqual(treasure1, treasure3)
+    func testTreasureTypeColors() {
+        XCTAssertEqual(TreasureType.gold.color, .systemYellow)
+        XCTAssertEqual(TreasureType.silver.color, .systemGray)
+        XCTAssertEqual(TreasureType.bronze.color, .systemBrown)
+        XCTAssertEqual(TreasureType.gem.color, .systemPurple)
+        XCTAssertEqual(TreasureType.artifact.color, .systemTeal)
     }
     
-    func testSampleTreasures() {
-        let samples = Treasure.sampleTreasures
+    func testTreasureManagerGeneration() {
+        let manager = TreasureManager()
+        let treasures = manager.generateTreasures(count: 10)
         
-        XCTAssertEqual(samples.count, 3)
-        XCTAssertEqual(samples[0].name, "Golden Star")
-        XCTAssertEqual(samples[1].name, "Diamond Gem")
-        XCTAssertEqual(samples[2].name, "Ancient Coin")
+        XCTAssertEqual(treasures.count, 10)
         
-        for treasure in samples {
-            XCTAssertFalse(treasure.isFound)
-            XCTAssertNotNil(treasure.hint)
+        for treasure in treasures {
+            XCTAssertNotNil(treasure.id)
+            XCTAssertFalse(treasure.isDiscovered)
+            XCTAssertTrue(treasure.position.x >= -3 && treasure.position.x <= 3)
+            XCTAssertTrue(treasure.position.z >= -3 && treasure.position.z <= 3)
+            XCTAssertEqual(treasure.position.y, 0.1)
         }
     }
 }

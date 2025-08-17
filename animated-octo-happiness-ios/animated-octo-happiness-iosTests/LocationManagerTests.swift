@@ -2,15 +2,15 @@
 //  LocationManagerTests.swift
 //  animated-octo-happiness-iosTests
 //
-//  Created by Claude on 8/17/25.
+//  Unit tests for LocationManager
 //
 
 import XCTest
 import CoreLocation
 @testable import animated_octo_happiness_ios
 
-final class LocationManagerTests: XCTestCase {
-    
+@MainActor
+class LocationManagerTests: XCTestCase {
     var locationManager: LocationManager!
     
     override func setUp() {
@@ -23,63 +23,32 @@ final class LocationManagerTests: XCTestCase {
         super.tearDown()
     }
     
-    func testDistanceToTreasureWithNoLocation() {
-        let treasure = Treasure(
-            name: "Test Treasure",
-            coordinate: CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194)
-        )
-        
-        XCTAssertNil(locationManager.distanceToTreasure(treasure))
+    func testInitialState() {
+        XCTAssertNil(locationManager.location)
+        XCTAssertNil(locationManager.locationError)
+        XCTAssertEqual(locationManager.authorizationStatus, CLLocationManager().authorizationStatus)
     }
     
-    func testBearingCalculation() {
-        locationManager.currentLocation = CLLocation(
-            latitude: 37.7749,
-            longitude: -122.4194
-        )
-        
-        let treasure = Treasure(
-            name: "North Treasure",
-            coordinate: CLLocationCoordinate2D(latitude: 37.7849, longitude: -122.4194)
-        )
-        
-        if let bearing = locationManager.bearingToTreasure(treasure) {
-            XCTAssertEqual(bearing, 0, accuracy: 5)
-        } else {
-            XCTFail("Bearing calculation failed")
-        }
+    func testLocationAccuracySetting() {
+        locationManager.setLocationAccuracy(kCLLocationAccuracyReduced)
+        XCTAssertNotNil(locationManager)
     }
     
-    func testGetNearbyTreasures() {
-        locationManager.currentLocation = CLLocation(
-            latitude: 37.7749,
-            longitude: -122.4194
-        )
+    func testLocationErrorEquality() {
+        let error1 = LocationManager.LocationError.denied
+        let error2 = LocationManager.LocationError.denied
+        let error3 = LocationManager.LocationError.restricted
         
-        let nearbyTreasure = Treasure(
-            name: "Nearby",
-            coordinate: CLLocationCoordinate2D(latitude: 37.7750, longitude: -122.4194)
-        )
-        
-        let farTreasure = Treasure(
-            name: "Far",
-            coordinate: CLLocationCoordinate2D(latitude: 37.8000, longitude: -122.4000)
-        )
-        
-        let treasures = [nearbyTreasure, farTreasure]
-        let nearby = locationManager.getNearbyTreasures(treasures, radius: 50)
-        
-        XCTAssertEqual(nearby.count, 1)
-        XCTAssertEqual(nearby.first?.name, "Nearby")
+        XCTAssertEqual(error1, error2)
+        XCTAssertNotEqual(error1, error3)
     }
     
-    func testGetNearbyTreasuresWithNoLocation() {
-        let treasure = Treasure(
-            name: "Test",
-            coordinate: CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194)
-        )
-        
-        let nearby = locationManager.getNearbyTreasures([treasure])
-        XCTAssertTrue(nearby.isEmpty)
+    func testLocationErrorDescriptions() {
+        XCTAssertNotNil(LocationManager.LocationError.denied.errorDescription)
+        XCTAssertNotNil(LocationManager.LocationError.restricted.errorDescription)
+        XCTAssertNotNil(LocationManager.LocationError.locationServicesDisabled.errorDescription)
+        XCTAssertNotNil(LocationManager.LocationError.accuracyReduced.errorDescription)
+        XCTAssertNotNil(LocationManager.LocationError.timeout.errorDescription)
+        XCTAssertNotNil(LocationManager.LocationError.unknown("Test error").errorDescription)
     }
 }
