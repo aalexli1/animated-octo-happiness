@@ -18,6 +18,8 @@ struct animated_octo_happiness_iosApp: App {
         do {
             let schema = Schema([
                 Treasure.self,
+                User.self,
+                UserPreferences.self,
                 NotificationPreferences.self
             ])
             let modelConfiguration = ModelConfiguration(
