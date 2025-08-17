@@ -20,7 +20,9 @@ struct animated_octo_happiness_iosApp: App {
                 Treasure.self,
                 User.self,
                 UserPreferences.self,
-                NotificationPreferences.self
+                NotificationPreferences.self,
+                GameStatistics.self,
+                PlayerProfile.self
             ])
             let modelConfiguration = ModelConfiguration(
                 schema: schema,

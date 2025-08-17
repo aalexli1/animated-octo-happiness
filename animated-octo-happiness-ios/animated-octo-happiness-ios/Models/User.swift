@@ -22,6 +22,8 @@ final class User {
     var totalScore: Int
     var achievements: [String]
     var preferences: UserPreferences?
+    var statistics: GameStatistics?
+    var activeProfile: PlayerProfile?
     
     init(
         id: String,

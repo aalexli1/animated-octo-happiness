@@ -18,10 +18,15 @@ final class Treasure {
     var longitude: Double
     var timestamp: Date
     var isCollected: Bool
+    var collectedBy: String?
+    var collectedAt: Date?
     var notes: String?
     var imageData: Data?
     var emoji: String?
     var createdBy: String?
+    var difficulty: Int
+    var hints: [String]
+    var isCustom: Bool
     
     var coordinate: CLLocationCoordinate2D {
         CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
@@ -38,10 +43,15 @@ final class Treasure {
         longitude: Double,
         timestamp: Date = Date(),
         isCollected: Bool = false,
+        collectedBy: String? = nil,
+        collectedAt: Date? = nil,
         notes: String? = nil,
         imageData: Data? = nil,
         emoji: String? = "🎁",
-        createdBy: String? = nil
+        createdBy: String? = nil,
+        difficulty: Int = 1,
+        hints: [String] = [],
+        isCustom: Bool = false
     ) {
         self.id = UUID()
         self.title = title
@@ -50,10 +60,15 @@ final class Treasure {
         self.longitude = longitude
         self.timestamp = timestamp
         self.isCollected = isCollected
+        self.collectedBy = collectedBy
+        self.collectedAt = collectedAt
         self.notes = notes
         self.imageData = imageData
         self.emoji = emoji
         self.createdBy = createdBy
+        self.difficulty = difficulty
+        self.hints = hints
+        self.isCustom = isCustom
     }
     
     convenience init(
@@ -62,10 +77,15 @@ final class Treasure {
         coordinate: CLLocationCoordinate2D,
         timestamp: Date = Date(),
         isCollected: Bool = false,
+        collectedBy: String? = nil,
+        collectedAt: Date? = nil,
         notes: String? = nil,
         imageData: Data? = nil,
         emoji: String? = "🎁",
-        createdBy: String? = nil
+        createdBy: String? = nil,
+        difficulty: Int = 1,
+        hints: [String] = [],
+        isCustom: Bool = false
     ) {
         self.init(
             title: title,
@@ -74,11 +94,39 @@ final class Treasure {
             longitude: coordinate.longitude,
             timestamp: timestamp,
             isCollected: isCollected,
+            collectedBy: collectedBy,
+            collectedAt: collectedAt,
             notes: notes,
             imageData: imageData,
             emoji: emoji,
-            createdBy: createdBy
+            createdBy: createdBy,
+            difficulty: difficulty,
+            hints: hints,
+            isCustom: isCustom
         )
+    }
+    
+    var isFound: Bool {
+        isCollected
+    }
+    
+    var foundBy: String? {
+        collectedBy
+    }
+    
+    var foundAt: Date? {
+        collectedAt
+    }
+    
+    var photoData: Data? {
+        get { imageData }
+        set { imageData = newValue }
+    }
+    
+    func markAsCollected(by userId: String) {
+        self.isCollected = true
+        self.collectedBy = userId
+        self.collectedAt = Date()
     }
 }
 

@@ -10,6 +10,7 @@ import PhotosUI
 
 struct UserProfileView: View {
     @ObservedObject var authService: AuthenticationService
+    @EnvironmentObject var persistenceManager: PersistenceManager
     @State private var isEditingProfile = false
     @State private var displayName = ""
     @State private var selectedPhoto: PhotosPickerItem?
@@ -17,44 +18,81 @@ struct UserProfileView: View {
     @State private var showingDeleteConfirmation = false
     @State private var showingLogoutConfirmation = false
     @State private var showingMigrationView = false
+    @State private var showingProfileSwitcher = false
+    @State private var showingStatistics = false
+    @State private var showingImportExport = false
     
     var body: some View {
         NavigationStack {
             List {
                 Section {
-                    HStack {
-                        if let photoImage = photoImage {
-                            photoImage
-                                .resizable()
-                                .scaledToFill()
+                    if let profile = persistenceManager.currentProfile {
+                        HStack {
+                            Text(profile.avatarEmoji)
+                                .font(.system(size: 60))
                                 .frame(width: 80, height: 80)
+                                .background(profile.color.opacity(0.2))
                                 .clipShape(Circle())
-                        } else {
-                            Image(systemName: "person.circle.fill")
-                                .resizable()
-                                .frame(width: 80, height: 80)
-                                .foregroundColor(.gray)
-                        }
-                        
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(authService.currentUser?.displayName ?? "Guest User")
-                                .font(.title2)
-                                .fontWeight(.semibold)
                             
-                            if let email = authService.currentUser?.email {
-                                Text(email)
-                                    .font(.caption)
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(profile.name)
+                                    .font(.title2)
+                                    .fontWeight(.semibold)
+                                
+                                if let stats = profile.statistics {
+                                    HStack(spacing: 12) {
+                                        Label("\(stats.totalTreasuresFound)", systemImage: "star.fill")
+                                            .font(.caption)
+                                        Label("\(stats.totalPoints) pts", systemImage: "trophy.fill")
+                                            .font(.caption)
+                                    }
                                     .foregroundColor(.secondary)
-                            } else if authService.currentUser?.isAnonymous == true {
-                                Text("Anonymous User")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
+                                }
+                            }
+                            
+                            Spacer()
+                            
+                            Button(action: { showingProfileSwitcher = true }) {
+                                Image(systemName: "person.2.fill")
+                                    .foregroundColor(.blue)
                             }
                         }
-                        
-                        Spacer()
+                        .padding(.vertical, 8)
+                    } else {
+                        HStack {
+                            if let photoImage = photoImage {
+                                photoImage
+                                    .resizable()
+                                    .scaledToFill()
+                                    .frame(width: 80, height: 80)
+                                    .clipShape(Circle())
+                            } else {
+                                Image(systemName: "person.circle.fill")
+                                    .resizable()
+                                    .frame(width: 80, height: 80)
+                                    .foregroundColor(.gray)
+                            }
+                            
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(authService.currentUser?.displayName ?? "Guest User")
+                                    .font(.title2)
+                                    .fontWeight(.semibold)
+                                
+                                if let email = authService.currentUser?.email {
+                                    Text(email)
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                } else if authService.currentUser?.isAnonymous == true {
+                                    Text("Anonymous User")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                }
+                            }
+                            
+                            Spacer()
+                        }
+                        .padding(.vertical, 8)
                     }
-                    .padding(.vertical, 8)
                 }
                 
                 if authService.currentUser?.isAnonymous == true {
@@ -117,6 +155,23 @@ struct UserProfileView: View {
                     }
                 }
                 
+                Section("Game") {
+                    Button(action: { showingStatistics = true }) {
+                        Label("Statistics", systemImage: "chart.bar.fill")
+                            .foregroundColor(.primary)
+                    }
+                    
+                    Button(action: { showingProfileSwitcher = true }) {
+                        Label("Switch Profile", systemImage: "person.2.fill")
+                            .foregroundColor(.primary)
+                    }
+                    
+                    Button(action: { showingImportExport = true }) {
+                        Label("Import/Export", systemImage: "square.and.arrow.up.on.square")
+                            .foregroundColor(.primary)
+                    }
+                }
+                
                 Section("Preferences") {
                     NavigationLink(destination: UserPreferencesView(authService: authService)) {
                         Label("Settings", systemImage: "gearshape")
@@ -167,6 +222,15 @@ struct UserProfileView: View {
             }
             .sheet(isPresented: $showingMigrationView) {
                 MigrateAnonymousUserView(authService: authService)
+            }
+            .sheet(isPresented: $showingProfileSwitcher) {
+                ProfileSwitcherView()
+            }
+            .sheet(isPresented: $showingStatistics) {
+                StatisticsView()
+            }
+            .sheet(isPresented: $showingImportExport) {
+                ImportExportView()
             }
             .confirmationDialog("Sign Out", isPresented: $showingLogoutConfirmation) {
                 Button("Sign Out", role: .destructive) {

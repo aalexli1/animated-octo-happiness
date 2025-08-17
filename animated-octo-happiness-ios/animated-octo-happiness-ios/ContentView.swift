@@ -12,6 +12,7 @@ struct ContentView: View {
     @State private var selectedTab = 0
     @StateObject private var locationManager = LocationManager()
     @StateObject private var authService = AuthenticationService()
+    @StateObject private var persistenceManager = PersistenceManager.shared
     @Environment(\.modelContext) private var modelContext
     
     var body: some View {
@@ -27,11 +28,17 @@ struct ContentView: View {
                 AuthenticatedContentView(selectedTab: $selectedTab)
                     .environmentObject(locationManager)
                     .environmentObject(authService)
+                    .environmentObject(persistenceManager)
             }
         }
         .onAppear {
             authService.setModelContext(modelContext)
+            persistenceManager.configure(with: modelContext)
             locationManager.requestLocationPermission()
+            
+            Task {
+                try? await persistenceManager.migrateFromJSONStore()
+            }
         }
     }
 }
