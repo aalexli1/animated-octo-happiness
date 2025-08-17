@@ -2,12 +2,12 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>en</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
-	<key>UILaunchStoryboardName</key>
-	<string></string>
-	<key>LSRequiresIPhoneOS</key>
-	<true/>
+	<key>CFBundleDisplayName</key>
+	<string>$(PRODUCT_NAME)</string>
 	<key>CFBundleShortVersionString</key>
 	<string>1.0</string>
 	<key>CFBundleVersion</key>
@@ -17,12 +17,14 @@
 	<key>CFBundleIdentifier</key>
 	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	<key>NSCameraUsageDescription</key>
-	<string>This app needs access to your camera to capture photos for treasures.</string>
+	<string>This app needs camera access to enable AR treasure hunting experiences and to capture photos for treasures.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>This app needs access to your photo library to select photos for treasures.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>This app needs your location to place and find treasures nearby.</string>
+	<string>AR Treasure Hunt needs location access to track your position and place virtual treasures in the real world.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>This app needs your location to notify you when treasures are nearby.</string>
+	<string>AR Treasure Hunt needs continuous location access to track treasures and provide location-based gameplay features even when the app is in the background.</string>
+	<key>NSLocationDefaultAccuracyReduced</key>
+	<false/>
 </dict>
 </plist>
