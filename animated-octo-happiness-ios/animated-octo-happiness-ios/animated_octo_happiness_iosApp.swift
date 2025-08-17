@@ -10,6 +10,7 @@ import SwiftData
 
 @main
 struct animated_octo_happiness_iosApp: App {
+    @StateObject private var locationManager = LocationManager()
     let modelContainer: ModelContainer
     
     init() {
@@ -33,6 +34,12 @@ struct animated_octo_happiness_iosApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environmentObject(locationManager)
+                .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
+                    Task { @MainActor in
+                        locationManager.checkLocationServicesStatus()
+                    }
+                }
         }
         .modelContainer(modelContainer)
     }

@@ -10,6 +10,7 @@ import SwiftData
 
 struct ContentView: View {
     @State private var selectedTab = 0
+    @StateObject private var locationManager = LocationManager()
     
     var body: some View {
         TabView(selection: $selectedTab) {
@@ -37,6 +38,10 @@ struct ContentView: View {
                     Label("Treasures", systemImage: "list.bullet")
                 }
                 .tag(3)
+        }
+        .environmentObject(locationManager)
+        .onAppear {
+            locationManager.requestLocationPermission()
         }
     }
 }
