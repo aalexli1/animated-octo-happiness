@@ -205,3 +205,30 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# iOS / Xcode
+*.xcuserstate
+*.xcworkspace/xcuserdata/
+*.xcodeproj/xcuserdata/
+*.xcodeproj/project.xcworkspace/xcuserdata/
+DerivedData/
+*.moved-aside
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+
+# Firebase
+GoogleService-Info.plist
+GoogleService-Info-*.plist
+firebase-debug.log
+.firebase/
+*.serviceAccountKey.json
+firestore-debug.log
+pubsub-debug.log
+ui-debug.log
+database-debug.log

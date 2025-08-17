@@ -1,0 +1,121 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+    
+    function isValidTreasure() {
+      return request.resource.data.keys().hasAll(['title', 'description', 'latitude', 'longitude', 'creatorId']) &&
+             request.resource.data.title is string &&
+             request.resource.data.title.size() > 0 &&
+             request.resource.data.title.size() <= 100 &&
+             request.resource.data.description is string &&
+             request.resource.data.description.size() <= 500 &&
+             request.resource.data.latitude is number &&
+             request.resource.data.latitude >= -90 &&
+             request.resource.data.latitude <= 90 &&
+             request.resource.data.longitude is number &&
+             request.resource.data.longitude >= -180 &&
+             request.resource.data.longitude <= 180;
+    }
+    
+    function isValidUserProfile() {
+      return request.resource.data.keys().hasAll(['email', 'joinedAt']) &&
+             request.resource.data.email is string &&
+             request.resource.data.email.matches('[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}');
+    }
+    
+    // Treasures collection rules
+    match /treasures/{treasureId} {
+      // Anyone can read treasures (for discovery)
+      allow read: if true;
+      
+      // Only authenticated users can create treasures
+      allow create: if isSignedIn() && 
+                       isValidTreasure() &&
+                       request.resource.data.creatorId == request.auth.uid;
+      
+      // Only the creator can update their treasure
+      allow update: if isSignedIn() && 
+                       isOwner(resource.data.creatorId) &&
+                       isValidTreasure() &&
+                       request.resource.data.creatorId == resource.data.creatorId; // Can't change creator
+      
+      // Only the creator can delete their treasure
+      allow delete: if isSignedIn() && isOwner(resource.data.creatorId);
+    }
+    
+    // User profiles collection rules
+    match /users/{userId} {
+      // Users can read any profile (for leaderboards, etc.)
+      allow read: if isSignedIn();
+      
+      // Users can only create their own profile
+      allow create: if isSignedIn() && 
+                       isOwner(userId) &&
+                       isValidUserProfile();
+      
+      // Users can only update their own profile
+      allow update: if isSignedIn() && 
+                       isOwner(userId) &&
+                       isValidUserProfile();
+      
+      // Users can delete their own profile
+      allow delete: if isSignedIn() && isOwner(userId);
+    }
+    
+    // User's private data (settings, preferences, etc.)
+    match /users/{userId}/private/{document=**} {
+      // Only the user can access their private data
+      allow read, write: if isSignedIn() && isOwner(userId);
+    }
+    
+    // Treasure discoveries/claims
+    match /discoveries/{discoveryId} {
+      // Users can read their own discoveries
+      allow read: if isSignedIn() && 
+                     (isOwner(resource.data.userId) || isOwner(resource.data.creatorId));
+      
+      // Users can create a discovery when they find a treasure
+      allow create: if isSignedIn() &&
+                       request.resource.data.userId == request.auth.uid &&
+                       request.resource.data.keys().hasAll(['userId', 'treasureId', 'discoveredAt']);
+      
+      // Discoveries cannot be updated or deleted (immutable log)
+      allow update, delete: if false;
+    }
+    
+    // Reports for inappropriate content
+    match /reports/{reportId} {
+      // Only admins can read reports
+      allow read: if isSignedIn() && 
+                     request.auth.token.admin == true;
+      
+      // Any signed-in user can create a report
+      allow create: if isSignedIn() &&
+                       request.resource.data.reporterId == request.auth.uid &&
+                       request.resource.data.keys().hasAll(['reporterId', 'treasureId', 'reason', 'reportedAt']);
+      
+      // Reports cannot be updated or deleted
+      allow update, delete: if false;
+    }
+    
+    // Global app statistics (read-only for all users)
+    match /statistics/{stat} {
+      allow read: if true;
+      allow write: if false; // Only backend functions can write
+    }
+    
+    // Push notification tokens
+    match /users/{userId}/tokens/{tokenId} {
+      allow read, write: if isSignedIn() && isOwner(userId);
+    }
+  }
+}

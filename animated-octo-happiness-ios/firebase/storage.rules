@@ -1,0 +1,155 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+    
+    function isValidImageFile() {
+      return request.resource.contentType.matches('image/.*') &&
+             request.resource.size < 10 * 1024 * 1024; // Max 10MB
+    }
+    
+    function isValidAudioFile() {
+      return request.resource.contentType.matches('audio/.*') &&
+             request.resource.size < 50 * 1024 * 1024; // Max 50MB
+    }
+    
+    function isValidVideoFile() {
+      return request.resource.contentType.matches('video/.*') &&
+             request.resource.size < 100 * 1024 * 1024; // Max 100MB
+    }
+    
+    // Treasure images
+    match /treasures/images/{userId}/{fileName} {
+      // Anyone can read treasure images (public content)
+      allow read: if true;
+      
+      // Only authenticated users can upload their own treasure images
+      allow create: if isSignedIn() && 
+                       isOwner(userId) &&
+                       isValidImageFile();
+      
+      // Only the owner can update their images
+      allow update: if isSignedIn() && 
+                       isOwner(userId) &&
+                       isValidImageFile();
+      
+      // Only the owner can delete their images
+      allow delete: if isSignedIn() && isOwner(userId);
+    }
+    
+    // Treasure audio files
+    match /treasures/audio/{userId}/{fileName} {
+      // Anyone can read treasure audio (public content)
+      allow read: if true;
+      
+      // Only authenticated users can upload their own audio
+      allow create: if isSignedIn() && 
+                       isOwner(userId) &&
+                       isValidAudioFile();
+      
+      // Only the owner can update their audio
+      allow update: if isSignedIn() && 
+                       isOwner(userId) &&
+                       isValidAudioFile();
+      
+      // Only the owner can delete their audio
+      allow delete: if isSignedIn() && isOwner(userId);
+    }
+    
+    // Treasure video files
+    match /treasures/video/{userId}/{fileName} {
+      // Anyone can read treasure videos (public content)
+      allow read: if true;
+      
+      // Only authenticated users can upload their own videos
+      allow create: if isSignedIn() && 
+                       isOwner(userId) &&
+                       isValidVideoFile();
+      
+      // Only the owner can update their videos
+      allow update: if isSignedIn() && 
+                       isOwner(userId) &&
+                       isValidVideoFile();
+      
+      // Only the owner can delete their videos
+      allow delete: if isSignedIn() && isOwner(userId);
+    }
+    
+    // User avatars
+    match /users/avatars/{userId}/{fileName} {
+      // Anyone can read user avatars (public profile pictures)
+      allow read: if true;
+      
+      // Users can only upload their own avatar
+      allow create: if isSignedIn() && 
+                       isOwner(userId) &&
+                       isValidImageFile() &&
+                       request.resource.size < 5 * 1024 * 1024; // Max 5MB for avatars
+      
+      // Users can only update their own avatar
+      allow update: if isSignedIn() && 
+                       isOwner(userId) &&
+                       isValidImageFile() &&
+                       request.resource.size < 5 * 1024 * 1024;
+      
+      // Users can delete their own avatar
+      allow delete: if isSignedIn() && isOwner(userId);
+    }
+    
+    // User's private content
+    match /users/content/{userId}/{fileName} {
+      // Only the user can access their private content
+      allow read: if isSignedIn() && isOwner(userId);
+      
+      // Users can upload their own private content
+      allow create: if isSignedIn() && 
+                       isOwner(userId) &&
+                       request.resource.size < 50 * 1024 * 1024; // Max 50MB
+      
+      // Users can update their own private content
+      allow update: if isSignedIn() && 
+                       isOwner(userId) &&
+                       request.resource.size < 50 * 1024 * 1024;
+      
+      // Users can delete their own private content
+      allow delete: if isSignedIn() && isOwner(userId);
+    }
+    
+    // Temporary uploads (for processing before final storage)
+    match /temp/{userId}/{fileName} {
+      // Only the user can access their temp files
+      allow read: if isSignedIn() && isOwner(userId);
+      
+      // Users can upload temp files
+      allow create: if isSignedIn() && 
+                       isOwner(userId) &&
+                       request.resource.size < 100 * 1024 * 1024; // Max 100MB
+      
+      // Temp files cannot be updated
+      allow update: if false;
+      
+      // Users can delete their own temp files
+      allow delete: if isSignedIn() && isOwner(userId);
+    }
+    
+    // App assets (read-only for all)
+    match /assets/{allPaths=**} {
+      allow read: if true;
+      allow write: if false; // Only admins via console/SDK
+    }
+    
+    // Backups (admin only)
+    match /backups/{allPaths=**} {
+      allow read, write: if request.auth != null && 
+                            request.auth.token.admin == true;
+    }
+  }
+}
