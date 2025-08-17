@@ -9,9 +9,17 @@ import SwiftUI
 
 @main
 struct animated_octo_happiness_iosApp: App {
+    @StateObject private var locationManager = LocationManager()
+    
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environmentObject(locationManager)
+                .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
+                    Task { @MainActor in
+                        locationManager.checkLocationServicesStatus()
+                    }
+                }
         }
     }
 }

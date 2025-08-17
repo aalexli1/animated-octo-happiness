@@ -16,5 +16,11 @@
 	<string>$(PRODUCT_NAME)</string>
 	<key>CFBundleIdentifier</key>
 	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>AR Treasure Hunt needs location access to track your position and place virtual treasures in the real world.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>AR Treasure Hunt needs continuous location access to track treasures and provide location-based gameplay features even when the app is in the background.</string>
+	<key>NSLocationDefaultAccuracyReduced</key>
+	<false/>
 </dict>
 </plist>
