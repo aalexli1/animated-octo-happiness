@@ -6,63 +6,47 @@
 //
 
 import SwiftUI
-import CoreLocation
+import SwiftData
 
 struct ContentView: View {
+    @State private var selectedTab = 0
     @StateObject private var locationManager = LocationManager()
-    @State private var showingLocationSettings = false
     
     var body: some View {
-        NavigationView {
-            VStack(spacing: 20) {
-                VStack {
-                    Image(systemName: "location.circle.fill")
-                        .font(.system(size: 60))
-                        .foregroundColor(.blue)
-                    
-                    Text("AR Treasure Hunt")
-                        .font(.title)
-                        .fontWeight(.bold)
+        TabView(selection: $selectedTab) {
+            MapView()
+                .ignoresSafeArea()
+                .tabItem {
+                    Label("Map", systemImage: "map.fill")
                 }
-                
-                LocationStatusView(
-                    authorizationStatus: locationManager.authorizationStatus,
-                    isLocationServicesEnabled: locationManager.isLocationServicesEnabled
-                )
-                
-                if let location = locationManager.location {
-                    LocationDetailsView(location: location)
-                } else {
-                    Text("No location available")
-                        .foregroundColor(.secondary)
-                        .padding()
-                        .frame(maxWidth: .infinity)
-                        .background(Color(.systemGray6))
-                        .cornerRadius(10)
+                .tag(0)
+            
+            ARTreasureHuntView()
+                .tabItem {
+                    Label("AR Hunt", systemImage: "camera.viewfinder")
                 }
-                
-                if let error = locationManager.locationError {
-                    ErrorView(error: error) {
-                        if error == .denied || error == .locationServicesDisabled {
-                            showingLocationSettings = true
-                        }
-                    }
+                .tag(1)
+            
+            CollectionView()
+                .tabItem {
+                    Label("Collection", systemImage: "star.fill")
                 }
-                
-                Spacer()
-                
-                LocationActionButtons(locationManager: locationManager)
-            }
-            .padding()
-            .navigationTitle("Location Tracker")
-            .navigationBarTitleDisplayMode(.inline)
-            .sheet(isPresented: $showingLocationSettings) {
-                SettingsPromptView()
-            }
+                .tag(2)
+            
+            TreasureListView()
+                .tabItem {
+                    Label("Treasures", systemImage: "list.bullet")
+                }
+                .tag(3)
+        }
+        .environmentObject(locationManager)
+        .onAppear {
+            locationManager.requestLocationPermission()
         }
     }
 }
 
 #Preview {
     ContentView()
+        .modelContainer(for: Treasure.self, inMemory: true)
 }

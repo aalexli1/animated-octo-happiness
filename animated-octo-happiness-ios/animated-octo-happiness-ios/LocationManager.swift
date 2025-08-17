@@ -15,6 +15,7 @@ class LocationManager: NSObject, ObservableObject {
     @Published var authorizationStatus: CLAuthorizationStatus = .notDetermined
     @Published var locationError: LocationError?
     @Published var isLocationServicesEnabled: Bool = false
+    @Published var isLocationAvailable = false
     
     private let locationManager = CLLocationManager()
     private var requestedAccuracy: CLLocationAccuracy = kCLLocationAccuracyBest
@@ -147,6 +148,7 @@ extension LocationManager: CLLocationManagerDelegate {
         Task { @MainActor in
             locationError = nil
             location = newLocation
+            isLocationAvailable = true
             
             if #available(iOS 14.0, *) {
                 if manager.accuracyAuthorization == .reducedAccuracy {
@@ -159,6 +161,7 @@ extension LocationManager: CLLocationManagerDelegate {
     nonisolated func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         Task { @MainActor in
             handleLocationError(error)
+            isLocationAvailable = false
         }
     }
     
@@ -170,14 +173,19 @@ extension LocationManager: CLLocationManagerDelegate {
             case .authorizedWhenInUse, .authorizedAlways:
                 locationError = nil
                 checkLocationServicesStatus()
+                isLocationAvailable = true
+                startLocationUpdates()
             case .denied:
                 locationError = .denied
                 stopLocationUpdates()
+                isLocationAvailable = false
             case .restricted:
                 locationError = .restricted
                 stopLocationUpdates()
+                isLocationAvailable = false
             case .notDetermined:
                 locationError = nil
+                requestLocationPermission()
             @unknown default:
                 break
             }
