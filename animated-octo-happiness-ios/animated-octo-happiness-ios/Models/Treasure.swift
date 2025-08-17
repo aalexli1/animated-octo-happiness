@@ -20,9 +20,15 @@ final class Treasure {
     var isCollected: Bool
     var notes: String?
     var imageData: Data?
+    var emoji: String?
+    var createdBy: String?
     
     var coordinate: CLLocationCoordinate2D {
         CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
+    }
+    
+    var location: CLLocation {
+        CLLocation(latitude: latitude, longitude: longitude)
     }
     
     init(
@@ -33,7 +39,9 @@ final class Treasure {
         timestamp: Date = Date(),
         isCollected: Bool = false,
         notes: String? = nil,
-        imageData: Data? = nil
+        imageData: Data? = nil,
+        emoji: String? = "🎁",
+        createdBy: String? = nil
     ) {
         self.id = UUID()
         self.title = title
@@ -44,6 +52,8 @@ final class Treasure {
         self.isCollected = isCollected
         self.notes = notes
         self.imageData = imageData
+        self.emoji = emoji
+        self.createdBy = createdBy
     }
     
     convenience init(
@@ -53,7 +63,9 @@ final class Treasure {
         timestamp: Date = Date(),
         isCollected: Bool = false,
         notes: String? = nil,
-        imageData: Data? = nil
+        imageData: Data? = nil,
+        emoji: String? = "🎁",
+        createdBy: String? = nil
     ) {
         self.init(
             title: title,
@@ -63,7 +75,9 @@ final class Treasure {
             timestamp: timestamp,
             isCollected: isCollected,
             notes: notes,
-            imageData: imageData
+            imageData: imageData,
+            emoji: emoji,
+            createdBy: createdBy
         )
     }
 }
@@ -93,7 +107,8 @@ extension Treasure {
             longitude: -122.4194,
             timestamp: Date(),
             isCollected: false,
-            notes: "Found while metal detecting in the park"
+            notes: "Found while metal detecting in the park",
+            emoji: "💰"
         )
     }
     
@@ -106,7 +121,8 @@ extension Treasure {
                 longitude: -122.4194,
                 timestamp: Date().addingTimeInterval(-86400),
                 isCollected: true,
-                notes: "Found while metal detecting in the park"
+                notes: "Found while metal detecting in the park",
+                emoji: "💰"
             ),
             Treasure(
                 title: "Crystal Fragment",
@@ -115,7 +131,8 @@ extension Treasure {
                 longitude: -122.4094,
                 timestamp: Date().addingTimeInterval(-172800),
                 isCollected: false,
-                notes: "Discovered near the waterfall"
+                notes: "Discovered near the waterfall",
+                emoji: "💎"
             ),
             Treasure(
                 title: "Old Map",
@@ -123,7 +140,8 @@ extension Treasure {
                 latitude: 37.7649,
                 longitude: -122.4294,
                 timestamp: Date().addingTimeInterval(-259200),
-                isCollected: false
+                isCollected: false,
+                emoji: "🗺️"
             )
         ]
     }

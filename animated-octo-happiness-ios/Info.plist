@@ -17,7 +17,9 @@
 	<key>CFBundleIdentifier</key>
 	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	<key>NSCameraUsageDescription</key>
-	<string>This app needs camera access to enable AR treasure hunting experiences</string>
+	<string>This app needs camera access to enable AR treasure hunting experiences and to capture photos for treasures.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>This app needs access to your photo library to select photos for treasures.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>AR Treasure Hunt needs location access to track your position and place virtual treasures in the real world.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
