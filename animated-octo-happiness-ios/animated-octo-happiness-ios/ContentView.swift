@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct ContentView: View {
     @State private var selectedTab = 0
@@ -30,10 +31,17 @@ struct ContentView: View {
                     Label("Collection", systemImage: "star.fill")
                 }
                 .tag(2)
+            
+            TreasureListView()
+                .tabItem {
+                    Label("Treasures", systemImage: "list.bullet")
+                }
+                .tag(3)
         }
     }
 }
 
 #Preview {
     ContentView()
+        .modelContainer(for: Treasure.self, inMemory: true)
 }
