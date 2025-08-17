@@ -2,97 +2,129 @@
 //  Treasure.swift
 //  animated-octo-happiness-ios
 //
-//  Created by Alex on 8/17/25.
+//  Created on 8/17/25.
 //
 
 import Foundation
-import RealityKit
-import ARKit
+import SwiftData
+import CoreLocation
 
-enum TreasureType: String, CaseIterable {
-    case gold = "Gold"
-    case silver = "Silver"
-    case bronze = "Bronze"
-    case gem = "Gem"
-    case artifact = "Artifact"
+@Model
+final class Treasure {
+    @Attribute(.unique) var id: UUID
+    var title: String
+    var treasureDescription: String
+    var latitude: Double
+    var longitude: Double
+    var timestamp: Date
+    var isCollected: Bool
+    var notes: String?
+    var imageData: Data?
     
-    var points: Int {
-        switch self {
-        case .gold: return 100
-        case .silver: return 50
-        case .bronze: return 25
-        case .gem: return 75
-        case .artifact: return 150
-        }
+    var coordinate: CLLocationCoordinate2D {
+        CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
     }
     
-    var color: UIColor {
-        switch self {
-        case .gold: return .systemYellow
-        case .silver: return .systemGray
-        case .bronze: return .systemBrown
-        case .gem: return .systemPurple
-        case .artifact: return .systemTeal
-        }
+    init(
+        title: String,
+        description: String,
+        latitude: Double,
+        longitude: Double,
+        timestamp: Date = Date(),
+        isCollected: Bool = false,
+        notes: String? = nil,
+        imageData: Data? = nil
+    ) {
+        self.id = UUID()
+        self.title = title
+        self.treasureDescription = description
+        self.latitude = latitude
+        self.longitude = longitude
+        self.timestamp = timestamp
+        self.isCollected = isCollected
+        self.notes = notes
+        self.imageData = imageData
+    }
+    
+    convenience init(
+        title: String,
+        description: String,
+        coordinate: CLLocationCoordinate2D,
+        timestamp: Date = Date(),
+        isCollected: Bool = false,
+        notes: String? = nil,
+        imageData: Data? = nil
+    ) {
+        self.init(
+            title: title,
+            description: description,
+            latitude: coordinate.latitude,
+            longitude: coordinate.longitude,
+            timestamp: timestamp,
+            isCollected: isCollected,
+            notes: notes,
+            imageData: imageData
+        )
     }
 }
 
-struct Treasure: Identifiable, Codable {
-    let id: UUID
-    let type: TreasureType
-    var isDiscovered: Bool
-    let position: SIMD3<Float>
-    let discoveryRadius: Float
+extension Treasure {
+    static func isValidTitle(_ title: String) -> Bool {
+        let trimmed = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        return !trimmed.isEmpty && trimmed.count <= 100
+    }
     
-    init(id: UUID = UUID(), type: TreasureType, position: SIMD3<Float>, discoveryRadius: Float = 0.5) {
-        self.id = id
-        self.type = type
-        self.isDiscovered = false
-        self.position = position
-        self.discoveryRadius = discoveryRadius
+    static func isValidDescription(_ description: String) -> Bool {
+        let trimmed = description.trimmingCharacters(in: .whitespacesAndNewlines)
+        return !trimmed.isEmpty && trimmed.count <= 500
+    }
+    
+    static func isValidCoordinate(latitude: Double, longitude: Double) -> Bool {
+        return latitude >= -90 && latitude <= 90 && longitude >= -180 && longitude <= 180
     }
 }
 
-class TreasureEntity: Entity {
-    var treasure: Treasure
-    var animationController: AnimationResource?
-    
-    init(treasure: Treasure) {
-        self.treasure = treasure
-        super.init()
-        setupModel()
+extension Treasure {
+    static var preview: Treasure {
+        Treasure(
+            title: "Ancient Coin",
+            description: "A mysterious golden coin found near the old oak tree",
+            latitude: 37.7749,
+            longitude: -122.4194,
+            timestamp: Date(),
+            isCollected: false,
+            notes: "Found while metal detecting in the park"
+        )
     }
     
-    required init() {
-        fatalError("init() has not been implemented")
-    }
-    
-    private func setupModel() {
-        let mesh = MeshResource.generateBox(size: 0.1)
-        var material = SimpleMaterial()
-        material.color = .init(tint: treasure.type.color, texture: nil)
-        material.metallic = 0.8
-        material.roughness = 0.2
-        
-        let modelComponent = ModelComponent(mesh: mesh, materials: [material])
-        self.components.set(modelComponent)
-        
-        let collisionShape = ShapeResource.generateBox(size: [0.1, 0.1, 0.1])
-        let collisionComponent = CollisionComponent(shapes: [collisionShape])
-        self.components.set(collisionComponent)
-        
-        self.position = treasure.position
-    }
-    
-    func playOpeningAnimation() {
-        var transform = self.transform
-        transform.scale = [1.5, 1.5, 1.5]
-        
-        self.move(to: transform, relativeTo: self.parent, duration: 0.3, timingFunction: .easeInOut)
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-            transform.scale = [0.01, 0.01, 0.01]
-            self.move(to: transform, relativeTo: self.parent, duration: 0.5, timingFunction: .easeIn)
-        }
+    static var previewData: [Treasure] {
+        [
+            Treasure(
+                title: "Ancient Coin",
+                description: "A mysterious golden coin found near the old oak tree",
+                latitude: 37.7749,
+                longitude: -122.4194,
+                timestamp: Date().addingTimeInterval(-86400),
+                isCollected: true,
+                notes: "Found while metal detecting in the park"
+            ),
+            Treasure(
+                title: "Crystal Fragment",
+                description: "A shimmering crystal piece that reflects rainbow colors",
+                latitude: 37.7849,
+                longitude: -122.4094,
+                timestamp: Date().addingTimeInterval(-172800),
+                isCollected: false,
+                notes: "Discovered near the waterfall"
+            ),
+            Treasure(
+                title: "Old Map",
+                description: "A weathered map showing locations of other treasures",
+                latitude: 37.7649,
+                longitude: -122.4294,
+                timestamp: Date().addingTimeInterval(-259200),
+                isCollected: false
+            )
+        ]
     }
 }
